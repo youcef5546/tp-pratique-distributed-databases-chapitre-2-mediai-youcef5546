@@ -52,7 +52,7 @@ docker exec -it citus_master psql -U postgres -d mediAI
 > **Collez votre capture ici :**
 > 
 > ```
-> <img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/9556de81-8eb3-447a-b687-4c318c7f64b8" />
+ <img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/9556de81-8eb3-447a-b687-4c318c7f64b8" />
 > ```
 
 ---
@@ -221,7 +221,7 @@ ORDER BY s.shardid;
 > **Collez votre capture ici :**
 > 
 > ```
-> <img width="935" height="393" alt="image" src="https://github.com/user-attachments/assets/a735ed47-4a29-4c0c-bdb2-6ced0499fcc3" />
+ <img width="935" height="393" alt="image" src="https://github.com/user-attachments/assets/a735ed47-4a29-4c0c-bdb2-6ced0499fcc3" />
 
 > ```
 
@@ -784,7 +784,7 @@ PREPARE TRANSACTION 'mediAI_urgence_yuki_2024';
 > **Collez votre capture ici :**
 > 
 > ```
-> <img width="931" height="381" alt="image" src="https://github.com/user-attachments/assets/6f27a325-fc57-4237-8262-99d602fab9b0" />
+ <img width="931" height="381" alt="image" src="https://github.com/user-attachments/assets/6f27a325-fc57-4237-8262-99d602fab9b0" />
 
 > ```
 
