@@ -736,15 +736,16 @@ Le **Two-Phase Commit (2PC)** garantit qu'une transaction distribuée est **atom
 
 > **Phase 1 (Prepare) :**
 > 
-> _______________________________________________
+>Le coordinator envoie un message PREPARE à tous les workers. Chaque worker vérifie qu'il peut exécuter sa partie de la transaction (verrous disponibles, contraintes respectées, espace disque...). S'il peut, il écrit les modifications dans son journal WAL, se verrouille dans l'état "prêt" et répond READY au coordinator. Si un problème survient, il répond ABORT
 
 > **Phase 2 (Commit) :**
 > 
-> _______________________________________________
+>
+Si TOUS les workers ont répondu READY, le coordinator envoie COMMIT à tous : chaque worker valide définitivement ses modifications locales et libère ses verrous. Si au moins un worker a répondu ABORT, le coordinator envoie ROLLBACK à tous : chaque worker annule ses modifications.
 
 > **Si un worker répond ABORT :**
 > 
-> _______________________________________________
+> Le coordinator décide d'annuler la transaction globale et envoie ROLLBACK à TOUS les workers (même ceux qui avaient répondu READY). Tous annulent leurs modifications. L'atomicité est garantie : soit tout est validé sur tous les nœuds, soit rien ne l'est.
 
 ---
 
@@ -783,7 +784,8 @@ PREPARE TRANSACTION 'mediAI_urgence_yuki_2024';
 > **Collez votre capture ici :**
 > 
 > ```
-> [VOTRE CAPTURE]
+> <img width="931" height="381" alt="image" src="https://github.com/user-attachments/assets/6f27a325-fc57-4237-8262-99d602fab9b0" />
+
 > ```
 
 #### ✏️ Exercice 4.2.b – Vérifier les transactions préparées
@@ -796,7 +798,7 @@ FROM pg_prepared_xacts;
 
 **Question 4.2.b** : Que contient la colonne `gid` ? À quoi sert-elle dans le protocole 2PC ?
 
-> _______________________________________________
+>  La colonne gid (Global Transaction Identifier) contient un identifiant unique choisi par le coordinator pour nommer la transaction préparée. Dans le protocole 2PC, le gid sert de référence commune entre le coordinator et tous les workers pour identifier sans ambiguïté quelle transaction doit être committée ou rollbackée en Phase 2. Si le coordinator tombe en panne, un administrateur peut retrouver et résoudre manuellement la transaction grâce à ce gid via COMMIT PREPARED ou ROLLBACK PREPARED.
 
 #### ✏️ Exercice 4.2.c – Phase 2 : COMMIT ou ROLLBACK
 
@@ -814,7 +816,13 @@ ORDER BY date DESC;
 ```
 
 > ```
-> [VOTRE RÉSULTAT]
+> COMMIT PREPARED
+
+ idrecord | idpatient |    date    |       examtype       | aiscore
+----------+-----------+------------+----------------------+---------
+       16 |        16 | 2026-05-06 | Consultation urgence |  0.8934
+       15 |        16 | 2024-01-18 | Endoscopie           |  0.9623
+(2 rows)
 > ```
 
 **Scénario B : Un worker a échoué → ROLLBACK**
@@ -834,7 +842,12 @@ SELECT COUNT(*) FROM Transactions WHERE type = 'consultation_test';
 ```
 
 > ```
-> [VOTRE RÉSULTAT]
+> ROLLBACK PREPARED
+
+ count
+-------
+     0
+(1 row)
 > ```
 
 ---
@@ -870,7 +883,7 @@ COMMIT PREPARED 'mediAI_failover_test';
 
 **Question 4.3.a** : Qu'est-il arrivé lors du COMMIT après la panne du worker ? Comment le 2PC protège-t-il les données dans ce cas ?
 
-> _______________________________________________
+>  Le COMMIT a échoué avec une erreur de connexion car citus_worker3 (Tokyo) était inaccessible. Le coordinator ne peut pas garantir que le worker a reçu le COMMIT. La transaction reste dans l'état "prepared" dans pg_prepared_xacts jusqu'à intervention manuelle. Le 2PC protège ici en n'effectuant aucun commit sur les autres workers tant que tous n'ont pas confirmé — les données restent cohérentes et non corrompues.
 
 ```bash
 # Redémarrer le worker
@@ -881,15 +894,19 @@ docker start citus_worker3
 
 **Question 4.3.b.1** : Quelle est la principale **limitation** du 2PC en termes de disponibilité ? (Hint : que se passe-t-il si le coordinator tombe en panne en Phase 2 ?)
 
-> _______________________________________________
+> Le 2PC est un protocole bloquant. Si le coordinator tombe en panne APRÈS avoir envoyé les PREPARE (Phase 1) mais AVANT d'envoyer la décision COMMIT/ROLLBACK (Phase 2), les workers qui ont répondu READY se retrouvent bloqués indéfiniment : ils ont verrouillé leurs ressources et ne peuvent ni committer ni rollbacker sans instruction du coordinator. Le système est indisponible jusqu'au retour du coordinator. La disponibilité est sacrifiée pour préserver la cohérence.
 
 **Question 4.3.b.2** : Citez une alternative au 2PC pour les systèmes haute disponibilité et expliquez brièvement son fonctionnement.
 
-> _______________________________________________
+>Le pattern SAGA est une alternative populaire. Il décompose une transaction distribuée en une séquence de transactions locales indépendantes. Chaque transaction locale publie un événement qui déclenche la suivante. En cas d'échec, des "compensating transactions" (transactions de compensation) sont exécutées en sens inverse pour annuler les effets des étapes précédentes. Avantage : non-bloquant, haute disponibilité. Inconvénient : pas d'isolation stricte entre les étapes (pas d'ACID global) — on accepte une cohérence éventuelle.
 
 **Question 4.3.b.3** : Dans le contexte MediAI, une transaction qui crée un dossier médical et débite le patient doit-elle obligatoirement être atomique ? Justifiez en termes métier.
 
-> _______________________________________________
+>  OUI, cette transaction doit obligatoirement être atomique pour plusieurs raisons :
+
+Cohérence médicale-financière : Si le dossier médical est créé mais le paiement échoue, on a une consultation gratuite non intentionnelle. Si le patient est débité mais le dossier médical n'est pas créé, il paie pour un acte sans trace médicale.
+Conformité réglementaire : En santé, tout acte médical facturé doit correspondre à un dossier médical traçable. La dissociation créerait des incohérences dans les audits et la facturation aux assurances.
+Confiance patient : Une erreur visible (débité sans dossier) nuirait gravement à la réputation de MediAI et pourrait engager sa responsabilité légale.
 
 ---
 
