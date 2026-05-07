@@ -4,9 +4,9 @@
 
 ---
 
-> **Nom :** ___________________________  
-> **Prénom :** ___________________________  
-> **Date :** ___________________________  
+> **Nom :** TALAHOUBRI  
+> **Prénom :** YOUCEF 
+> **Date :** 07/05/2026 
 > **Note :** ___ / 100
 
 ---
@@ -52,7 +52,7 @@ docker exec -it citus_master psql -U postgres -d mediAI
 > **Collez votre capture ici :**
 > 
 > ```
-> [VOTRE CAPTURE D'ÉCRAN]
+> <img width="1365" height="767" alt="image" src="https://github.com/user-attachments/assets/9556de81-8eb3-447a-b687-4c318c7f64b8" />
 > ```
 
 ---
