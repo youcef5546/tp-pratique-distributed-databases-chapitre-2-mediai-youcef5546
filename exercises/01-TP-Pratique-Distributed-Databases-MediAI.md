@@ -72,7 +72,8 @@ SELECT citus_add_node('citus_worker3', 5432);
 
 > **Votre réponse :**
 > 
-> _______________________________________________
+>Le coordinator est le nœud maître qui reçoit toutes les requêtes des clients, les décompose et les distribue aux workers. Il gère les métadonnées du cluster (quels shards sont sur quels workers) mais ne stocke pas de données applicatives. Il agrège les résultats et les retourne au client.
+Les workers sont les nœuds esclaves qui stockent physiquement les shards (fragments) des tables distribuées et exécutent les requêtes localement sur leurs données. Chaque worker ne voit qu'une partie des données globales.
 
 **Question 1.2.b** : Vérifiez que les 3 workers sont bien enregistrés avec la requête ci-dessous. Combien de lignes obtenez-vous ?
 
@@ -84,7 +85,12 @@ ORDER BY nodeid;
 
 > **Résultat et réponse :**
 > 
-> _______________________________________________
+> nodeid |   nodename    | nodeport | isactive
+--------+---------------+----------+----------
+      1 | citus_worker1 |     5432 | t
+      2 | citus_worker2 |     5432 | t
+      3 | citus_worker3 |     5432 | t
+(3 rows)
 
 ---
 
@@ -118,10 +124,10 @@ SELECT 'Transactions',                 COUNT(*)              FROM Transactions;
 > 
 > | table_name | nb_lignes attendu | nb_lignes observé |
 > |---|---|---|
-> | Patients | 20 | ___ |
-> | MedicalRecords | 14 | ___ |
-> | TrainingData | 13 | ___ |
-> | Transactions | 18 | ___ |
+> | Patients | 20 | 20 |
+> | MedicalRecords | 14 | 15 |
+> | TrainingData | 13 | 13|
+> | Transactions | 18 | 18 |
 
 ---
 
