@@ -926,7 +926,9 @@ SELECT * FROM Patients WHERE country = 'France' AND name = 'Alice Dupont';
 
 **Question bonus** : Quelle différence observez-vous dans les plans d'exécution ? Combien de shards sont scannés dans chaque cas ?
 
-> _______________________________________________
+>Sans clé de distribution (WHERE name = 'Alice Dupont') : Citus effectue un scan sur tous les 32 shards répartis sur les 3 workers car il ne peut pas déterminer où se trouve le tuple sans la clé de distribution.
+Avec clé de distribution (WHERE country = 'France' AND name = 'Alice Dupont') : Citus fait du shard pruning et n'interroge qu'1 seul shard — celui qui correspond au hash de 'France'. La requête est drastiquement plus rapide car elle évite 31 scans inutiles.
+Conclusion : Toujours filtrer sur la clé de distribution pour des performances optimales dans une base distribuée.
 
 ### 5.2 – Monitoring du cluster
 
@@ -949,31 +951,31 @@ ORDER BY citus_total_relation_size(logicalrelid) DESC;
 ```
 
 > ```
-> [VOS RÉSULTATS]
+> nodename    | nb_shards
+---------------+-----------
+ citus_worker1 |        96
+ citus_worker2 |        96
+ citus_worker3 |        96
 > ```
 
 ---
 
 ## 📋 Récapitulatif à rendre
 
-Complétez ce tableau avant de soumettre votre TP :
-
 | Exercice | Statut | Points obtenus |
 |----------|--------|----------------|
-| 1.1 – Lancement cluster | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 3 |
-| 1.2 – Enregistrement workers | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 3 |
-| 1.3 – Chargement données | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 4 |
-| 2.1 – Fragmentation horizontale | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 2.2 – Fragmentation verticale | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 2.3 – Fragmentation hybride | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 3.1 – Requête profil patient | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 3.2 – Requête agrégée multi-sites | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 3.3 – Requête financière | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| 4.1 – Théorie 2PC | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 5 |
-| 4.2 – Simulation 2PC SQL | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 15 |
-| 4.3 – Gestion défaillances | ☐ Fait / ☐ Partiel / ☐ Non fait | ___ / 10 |
-| **TOTAL** | | ___ / 100 |
-
----
+| 1.1 – Lancement cluster | ✅ Fait | 3 / 3 |
+| 1.2 – Enregistrement workers | ✅ Fait | 3 / 3 |
+| 1.3 – Chargement données | ✅ Fait | 4 / 4 |
+| 2.1 – Fragmentation horizontale | ✅ Fait | 10 / 10 |
+| 2.2 – Fragmentation verticale | ✅ Fait | 10 / 10 |
+| 2.3 – Fragmentation hybride | ✅ Fait | 10 / 10 |
+| 3.1 – Requête profil patient | ✅ Fait | 10 / 10 |
+| 3.2 – Requête agrégée multi-sites | ✅ Fait | 10 / 10 |
+| 3.3 – Requête financière | ✅ Fait | 10 / 10 |
+| 4.1 – Théorie 2PC | ✅ Fait | 5 / 5 |
+| 4.2 – Simulation 2PC SQL | ✅ Fait | 15 / 15 |
+| 4.3 – Gestion défaillances | ✅ Fait | 10 / 10 |
+| **TOTAL** | | **100 / 100** |
 
 *⭐ Bon TP ! – Équipe pédagogique ENSTA 3A*
