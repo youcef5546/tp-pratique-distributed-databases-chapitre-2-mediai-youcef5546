@@ -158,23 +158,22 @@ Complétez les vues suivantes (remplacez les `___`) :
 -- Fragment Paris
 CREATE OR REPLACE VIEW TrainingData_Paris AS
     SELECT * FROM TrainingData
-    WHERE siteOrigin = ___;        -- ← compléter
+    WHERE siteOrigin = 'Paris';
 
 -- Fragment Tunis
 CREATE OR REPLACE VIEW TrainingData_Tunis AS
     SELECT * FROM TrainingData
-    WHERE ___ = 'Tunis';           -- ← compléter
+    WHERE siteOrigin = 'Tunis';
 
 -- Fragment Montréal
 CREATE OR REPLACE VIEW TrainingData_Montreal AS
     SELECT * FROM TrainingData
-    WHERE ___;                     -- ← compléter
+    WHERE siteOrigin = 'Montreal';
 
 -- Fragment Tokyo
 CREATE OR REPLACE VIEW TrainingData_Tokyo AS
     SELECT * FROM TrainingData
-    WHERE ___;                     -- ← compléter
-```
+    WHERE siteOrigin = 'Tokyo';
 
 > **Votre code SQL complété :**
 > 
