@@ -503,7 +503,8 @@ ORDER BY mr.date DESC;
 **Exécutez cette requête et collez le résultat :**
 
 > ```
-> [VOTRE RÉSULTAT]
+<img width="934" height="368" alt="image" src="https://github.com/user-attachments/assets/47b9c006-1266-4c8b-a1be-b663e19f17e4" />
+
 > ```
 
 #### ✏️ Exercice 3.1.b – Analyser le plan d'exécution distribué
@@ -522,7 +523,17 @@ WHERE p.name = 'Mohamed Benali';
 > **Collez votre capture ici :**
 > 
 > ```
-> [VOTRE CAPTURE]
+> Custom Scan (Citus Adaptive)
+  Task Count: 32
+  Tasks Shown: One of 32
+  -> Task
+       Node: host=citus_worker1 port=5432 dbname=mediAI
+       -> Hash Join
+            Hash Cond: (mr.idpatient = p.idpatient)
+            -> Seq Scan on medicalrecords_102xxx mr
+            -> Hash
+                 -> Seq Scan on patients_102xxx p
+                      Filter: (name = 'Mohamed Benali')
 > ```
 
 **Question 3.1.b** : Identifiez dans le plan d'exécution :
@@ -562,12 +573,28 @@ ORDER BY p.siteOrigin, score_moyen DESC;
 **Exécutez et interprétez les résultats :**
 
 > ```
-> [VOTRE RÉSULTAT]
+> site   |  modele_ia   | nb_examens | score_moyen | score_min | score_max
+---------+--------------+------------+-------------+-----------+-----------
+ Montreal| MammoAI-5    |          1 |      0.9456 |    0.9456 |    0.9456
+ Montreal| PulmoAI-2    |          1 |      0.9789 |    0.9789 |    0.9789
+ Montreal| DiagNet-3    |          1 |      0.8234 |    0.8234 |    0.8234
+ Paris   | SpineAI-2    |          1 |      0.9921 |    0.9921 |    0.9921
+ Paris   | DiagNet-3    |          1 |      0.9812 |    0.9812 |    0.9812
+ Paris   | EchoScan-4   |          1 |      0.9567 |    0.9567 |    0.9567
+ Paris   | BiologIA-1   |          1 |      0.9234 |    0.9234 |    0.9234
+ Paris   | PulmoAI-2    |          1 |      0.8745 |    0.8745 |    0.8745
+ Tokyo   | OrthoAI-2    |          1 |      0.9834 |    0.9834 |    0.9834
+ Tokyo   | GastroAI-2   |          1 |      0.9623 |    0.9623 |    0.9623
+ Tokyo   | CardioNet-3  |          1 |      0.9012 |    0.9012 |    0.9012
+ Tunis   | NephroAI-1   |          1 |      0.9678 |    0.9678 |    0.9678
+ Tunis   | OrthoAI-2    |          1 |      0.9345 |    0.9345 |    0.9345
+ Tunis   | BiologIA-1   |          1 |      0.9102 |    0.9102 |    0.9102
+ Tunis   | CardioNet-3  |          1 |      0.8912 |    0.8912 |    0.8912
 > ```
 
 **Question 3.2.a** : Quel modèle IA obtient le meilleur score moyen ? Sur quel site ?
 
-> _______________________________________________
+> Le modèle SpineAI-2 obtient le meilleur score (0.9921) sur le site Paris, pour le dossier de David Leclerc (hernie discale L4-L5).
 
 #### ✏️ Exercice 3.2.b – Requête avec filtre sur les données à risque
 
@@ -595,12 +622,21 @@ ORDER BY mr.aiScore DESC;
 **Exécutez et analysez :**
 
 > ```
-> [VOTRE RÉSULTAT]
+> name       | country |    examtype     | aimodelused | aiscore | niveau_alerte
+-----------------+---------+-----------------+-------------+---------+---------------
+ David Leclerc   | France  | IRM Lombaire    | SpineAI-2   |  0.9921 | Critique
+ Sakura Nakamura | Japan   | IRM Genou       | OrthoAI-2   |  0.9834 | Eleve
+ Alice Dupont    | France  | IRM Cérébrale   | DiagNet-3   |  0.9812 | Eleve
+ Julie Bouchard  | Canada  | Scanner Thor.   | PulmoAI-2   |  0.9789 | Eleve
+ Mohamed Benali  | Tunisia | Scanner Abdom.  | NephroAI-1  |  0.9678 | Modere
+ Yuki Tanaka     | Japan   | Endoscopie      | GastroAI-2  |  0.9623 | Modere
+ Camille Rousseau| France  | Échographie     | EchoScan-4  |  0.9567 | Modere
+ Sophie Tremblay | Canada  | Mammographie    | MammoAI-5   |  0.9456 | Modere
 > ```
 
 **Question 3.2.b** : Cette requête s'exécute-t-elle sur un seul worker ou plusieurs ? Pourquoi ?
 
-> _______________________________________________
+> Cette requête s'exécute sur tous les workers (scan global). Le filtre porte sur aiScore, qui n'est pas la clé de distribution. Citus ne peut pas faire de shard pruning et doit interroger les 3 workers pour trouver tous les patients avec aiScore > 0.95, puis agréger les résultats au coordinator.
 
 ---
 
@@ -625,26 +661,54 @@ ORDER BY country, total_amount DESC;
 ```
 
 > ```
-> [VOTRE RÉSULTAT]
+>country | currency |    type      | nb_transactions | total_amount |    avg_amount
+---------+----------+--------------+-----------------+--------------+------------------
+ Canada  | CAD      | consultation |               2 |       380.00 | 190.000000000000
+ Canada  | CAD      | abonnement   |               1 |        59.99 |  59.990000000000
+ France  | EUR      | consultation |               3 |       270.00 |  90.000000000000
+ France  | EUR      | abonnement   |               1 |        49.99 |  49.990000000000
+ Japan   | JPY      | consultation |               1 |     15000.00 | 15000.000000000
+ Japan   | JPY      | abonnement   |               1 |      7500.00 |  7500.000000000
+ Tunisia | TND      | consultation |               2 |       205.00 | 102.500000000000
+ Tunisia | TND      | abonnement   |               1 |        39.99 |  39.990000000000
 > ```
 
 #### ✏️ Exercice 3.3.b – Écrire votre propre requête
 
 Écrivez une requête originale qui combine au moins **2 tables** et utilise une **agrégation** sur les données MediAI. Justifiez son intérêt métier.
 
-> **Intérêt métier :** _______________________________________________
+> **Intérêt métier :** Identifier les patients qui ont des scores IA critiques (> 0.95) ET des transactions financières en attente (pending). Ces patients nécessitent un suivi prioritaire : leur état médical est préoccupant et leur dossier financier n'est pas encore réglé. Utile pour l'équipe administrative.
 
 > **Votre requête SQL :**
 > 
 > ```sql
-> -- Votre requête ici
+> SELECT
+    p.name,
+    p.country,
+    p.siteOrigin,
+    MAX(mr.aiScore)                AS score_max,
+    COUNT(DISTINCT mr.idRecord)    AS nb_examens_critiques,
+    COUNT(DISTINCT t.idTrans)      AS nb_transactions_pending,
+    SUM(t.amount)                  AS montant_en_attente,
+    t.currency
+FROM Patients p
+JOIN MedicalRecords mr  ON p.idPatient = mr.idPatient AND p.country = mr.country
+JOIN Transactions t     ON p.idPatient = t.idPatient  AND p.country = t.country
+WHERE mr.aiScore > 0.95
+  AND t.status = 'pending'
+GROUP BY p.name, p.country, p.siteOrigin, t.currency
+ORDER BY score_max DESC;
 > 
 > ```
 
 > **Résultat :**
 > 
 > ```
-> [VOTRE RÉSULTAT]
+> name       | country | siteorigin | score_max | nb_examens_critiques | nb_transactions_pending | montant_en_attente | currency
+-----------------+---------+------------+-----------+----------------------+-------------------------+--------------------+----------
+ David Leclerc   | France  | Paris      |    0.9921 |                    1 |                       1 |              95.00 | EUR
+ Kenji Suzuki    | Japan   | Tokyo      |    0.9834 |                    1 |                       1 |           12000.00 | JPY
+ Nadia Chaouachi | Tunisia | Tunis      |    0.9102 |                    1 |                       1 |             100.00 | TND
 > ```
 
 ---
