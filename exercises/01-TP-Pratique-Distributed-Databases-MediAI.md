@@ -355,13 +355,13 @@ Dessinez (ou décrivez textuellement) le schéma complet des 8 fragments qui ré
 > | Fragment | country | Colonnes |
 > |----------|---------|----------|
 > | F_FR_FIN | France  | idTrans, idPatient, date, amount, currency |
-> | F_FR_MGT | France  | ___ |
-> | F_TN_FIN | Tunisia | ___ |
-> | F_TN_MGT | Tunisia | ___ |
-> | F_CA_FIN | Canada  | ___ |
-> | F_CA_MGT | Canada  | ___ |
-> | F_JP_FIN | Japan   | ___ |
-> | F_JP_MGT | Japan   | ___ |
+> | F_FR_MGT | France  | idTrans, idPatient, type, status|
+> | F_TN_FIN | Tunisia | idTrans, idPatient, date, amount, currency |
+> | F_TN_MGT | Tunisia | idTrans, idPatient, type, status |
+> | F_CA_FIN | Canada  | idTrans, idPatient, date, amount, currency |
+> | F_CA_MGT | Canada  | idTrans, idPatient, type, status |
+> | F_JP_FIN | Japan   | idTrans, idPatient, date, amount, currency|
+> | F_JP_MGT | Japan   | idTrans, idPatient, type, status |
 
 #### ✏️ Exercice 2.3.b – Implémentation SQL des fragments hybrides
 
@@ -398,7 +398,49 @@ ___
 > **Votre code SQL complet :**
 > 
 > ```sql
-> 
+> -- ── France ──────────────────────────────────────────────────
+CREATE OR REPLACE VIEW Trans_FR_Financial AS
+    SELECT idTrans, idPatient, date, amount, currency
+    FROM Transactions
+    WHERE country = 'France';
+
+CREATE OR REPLACE VIEW Trans_FR_Management AS
+    SELECT idTrans, idPatient, type, status
+    FROM Transactions
+    WHERE country = 'France';
+
+-- ── Tunisia ─────────────────────────────────────────────────
+CREATE OR REPLACE VIEW Trans_TN_Financial AS
+    SELECT idTrans, idPatient, date, amount, currency
+    FROM Transactions
+    WHERE country = 'Tunisia';
+
+CREATE OR REPLACE VIEW Trans_TN_Management AS
+    SELECT idTrans, idPatient, type, status
+    FROM Transactions
+    WHERE country = 'Tunisia';
+
+-- ── Canada ───────────────────────────────────────────────────
+CREATE OR REPLACE VIEW Trans_CA_Financial AS
+    SELECT idTrans, idPatient, date, amount, currency
+    FROM Transactions
+    WHERE country = 'Canada';
+
+CREATE OR REPLACE VIEW Trans_CA_Management AS
+    SELECT idTrans, idPatient, type, status
+    FROM Transactions
+    WHERE country = 'Canada';
+
+-- ── Japan ─────────────────────────────────────────────────────
+CREATE OR REPLACE VIEW Trans_JP_Financial AS
+    SELECT idTrans, idPatient, date, amount, currency
+    FROM Transactions
+    WHERE country = 'Japan';
+
+CREATE OR REPLACE VIEW Trans_JP_Management AS
+    SELECT idTrans, idPatient, type, status
+    FROM Transactions
+    WHERE country = 'Japan';
 > ```
 
 #### ✏️ Exercice 2.3.c – Reconstruction
@@ -416,7 +458,15 @@ JOIN Trans_FR_Management mgt ON ___ = ___;  -- ← condition de jointure
 > **Votre requête complétée :**
 > 
 > ```sql
-> 
+> SELECT fin.idTrans,
+       fin.idPatient,
+       fin.date,
+       fin.amount,
+       fin.currency,
+       mgt.type,
+       mgt.status
+FROM Trans_FR_Financial fin
+JOIN Trans_FR_Management mgt ON fin.idTrans = mgt.idTrans;
 > ```
 
 ---
