@@ -253,8 +253,8 @@ Fragment B – Données IA (data scientists) :
 
 **Question** : Pourquoi séparer les données cliniques des données IA ? Donnez 2 raisons.
 
-> 1. _______________________________________________  
-> 2. _______________________________________________
+> 1. Sécurité et confidentialité : Les données cliniques (résultats d'examens, diagnostics) sont protégées par le secret médical et ne doivent être accessibles qu'aux médecins habilités. Les data scientists n'ont pas besoin d'identifier les patients pour entraîner leurs modèles — ils travaillent sur des features anonymisées.
+> 2. Performance : En ne chargeant que les colonnes nécessaires à leur usage, chaque groupe évite de transférer des données inutiles. Les médecins n'ont pas besoin des scores IA bruts, et les data scientists n'ont pas besoin du texte du résultat clinique. Cela réduit la bande passante et améliore les temps de réponse.
 
 #### ✏️ Exercice 2.2.b – Les vues sont déjà créées dans le schéma, testez-les
 
@@ -278,7 +278,9 @@ LIMIT 5;
 > **Collez votre capture ici :**
 > 
 > ```
-> [VOTRE CAPTURE]
+ <img width="962" height="413" alt="image" src="https://github.com/user-attachments/assets/5d10e47e-ec84-40c6-89b6-06ef918afd3d" />
+<img width="927" height="332" alt="image" src="https://github.com/user-attachments/assets/96d652fc-4465-44e3-bf00-72c821dd8398" />
+
 > ```
 
 #### ✏️ Exercice 2.2.c – Créer une vraie fragmentation verticale physique
@@ -316,7 +318,10 @@ INSERT INTO MedRec_AI
 > **Votre code SQL :**
 > 
 > ```sql
-> 
+> CREATE TABLE
+CREATE TABLE
+INSERT 0 15
+INSERT 0 15
 > ```
 
 ---
