@@ -200,7 +200,7 @@ SELECT COUNT(*) AS total_global FROM TrainingData;
 
 > **Votre réponse :**
 > 
-> _______________________________________________
+> Oui, la propriété de complétude est respectée. La somme des lignes de tous les fragments (4 + 3 + 3 + 3 = 13) est égale au total de la table globale (13 lignes). Chaque tuple de TrainingData appartient à exactement un fragment selon sa valeur de siteOrigin. La propriété de disjonction est également respectée : aucun tuple n'apparaît dans deux fragments simultanément.
 
 #### ✏️ Exercice 2.1.c – Distribution Citus effective
 
@@ -221,12 +221,13 @@ ORDER BY s.shardid;
 > **Collez votre capture ici :**
 > 
 > ```
-> [VOTRE CAPTURE]
+> <img width="935" height="393" alt="image" src="https://github.com/user-attachments/assets/a735ed47-4a29-4c0c-bdb2-6ced0499fcc3" />
+
 > ```
 
 **Question 2.1.c** : Sur quel(s) worker(s) les données du site "Tokyo" sont-elles stockées ?
 
-> _______________________________________________
+> Les données du site "Tokyo" sont stockées sur citus_worker3. Citus calcule le hash de la valeur 'Tokyo' et le place dans le shard correspondant, qui est assigné à worker3.
 
 ---
 
